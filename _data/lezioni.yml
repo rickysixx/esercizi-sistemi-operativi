@@ -122,9 +122,305 @@
         kill is /usr/bin/kill
         kill is /bin/kill
         ```
+- numero: 6
+  titolo: Documentazione
+  esercizi:
+    - numero: 1
+      slide: 21
+      traccia: |
+        Il comando `cd` è interno. Come è possibile ottenere la relativa documentazione? \
+        È possibile ottenere documentazione sul comando esterno `ls` in maniera analoga?
+      soluzione: |
+        - `help cd` o `man bash-builtins` per la documentazione su `cd`;
+        - `man ls` per la documentazione su `ls`
+    - numero: 2
+      slide: 31
+      traccia: L'eseguibile `dd` è un comando esterno. Come è possibile ottenere documentazione su di esso?
+      soluzione: Con `man dd`.
+    - numero: 3
+      slide: 36
+      traccia: Si consideri la parola chiave di ricerca `stat`. Si stabilisca se essa è contenuta in più sezioni del manuale ed, in caso affermativo, si elenchino quali.
+      soluzione: |
+        Eseguendo `man -a stat` si scopre che `stat` è disponibile sia come eseguibile (`/usr/bin/stat`) sia come funzione di libreria, quindi è sia nella sezione 1 che nella
+        sezione 2 del manuale.
+    - numero: 4
+      slide: 39
+      traccia: Trovare la documentazione relativa allo shell builtin che permette di attendere la terminazione di un'applicazione.
+      soluzione: |
+        Eseguendo `man bash-builtins` e cercando il termine `wait` si giunge al builtin `wait`.
+    - numero: 5
+      slide: 44
+      traccia: Trovare un comando esterno che calcola il checksum di un file.
+      soluzione: |
+        ```
+        $ apropos -s 1 checksum
+        cksum (1)            - checksum and count the bytes in a file
+        shasum (1)           - Print or Check SHA Checksums
+        sum (1)              - checksum and count the blocks in a file
+        ```
 - numero: 7
   titolo: File
   esercizi:
+    - numero: 1
+      slide: 32
+      traccia: | 
+        A quale file speciale di dispositivo corrisponde il dispositivo “primo disco SATA”? \
+        Che cosa si può ottenere con l'accesso a tale dispositivo?
+      soluzione: Il file è `/dev/sda`. Accedendo a questo file è possibile vedere i byte contenuti sul disco.
+    - numero: 2
+      slide: 54
+      traccia: |
+        Si stampi l'insieme dei metadati per i file seguenti:
+        - `$HOME`
+        - `/tmp/.X11-unix/X0`
+        - `/dev/sda1`
+        - `/dev/tty0`
+
+        Notate delle differenze?
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~$ stat $HOME /tmp/.X11-unix/X0 /dev/sda1 /dev/tty0
+        File: /home/studente
+        Size: 4096      	Blocks: 8          IO Block: 4096   directory
+        Device: 801h/2049d	Inode: 273597      Links: 21
+        Access: (0755/drwxr-xr-x)  Uid: ( 1000/studente)   Gid: ( 1000/studente)
+        Access: 2022-02-24 08:37:06.194081315 +0100
+        Modify: 2022-02-24 11:02:54.781455955 +0100
+        Change: 2022-02-24 11:02:54.781455955 +0100
+        Birth: 2021-12-01 12:25:10.740210166 +0100
+          File: /tmp/.X11-unix/X0
+          Size: 0         	Blocks: 0          IO Block: 4096   socket
+        Device: 801h/2049d	Inode: 2884082     Links: 1
+        Access: (0755/srwxr-xr-x)  Uid: ( 1000/studente)   Gid: ( 1000/studente)
+        Access: 2022-02-22 09:52:13.696835147 +0100
+        Modify: 2022-02-22 09:52:13.696835147 +0100
+        Change: 2022-02-22 09:52:13.696835147 +0100
+        Birth: 2022-02-22 09:52:13.696835147 +0100
+          File: /dev/sda1
+          Size: 0         	Blocks: 0          IO Block: 4096   block special file
+        Device: 5h/5d	Inode: 202         Links: 1     Device type: 8,1
+        Access: (0660/brw-rw----)  Uid: (    0/    root)   Gid: (    6/    disk)
+        Access: 2022-02-22 09:51:14.592000485 +0100
+        Modify: 2022-02-22 09:51:10.344000299 +0100
+        Change: 2022-02-22 09:51:10.344000299 +0100
+        Birth: -
+          File: /dev/tty0
+          Size: 0         	Blocks: 0          IO Block: 4096   character special file
+        Device: 5h/5d	Inode: 13          Links: 1     Device type: 4,0
+        Access: (0620/crw--w----)  Uid: (    0/    root)   Gid: (    5/     tty)
+        Access: 2022-02-22 09:51:09.428000259 +0100
+        Modify: 2022-02-22 09:51:09.428000259 +0100
+        Change: 2022-02-22 09:51:09.428000259 +0100
+        Birth: -
+        ```
+        Le differenze sono:
+        - `$HOME` è una directory;
+        - `/tmp/.X11-unix/X0` è un socket;
+        - `/dev/sda1` è un file speciale di dispositivo a blocchi;
+        - `/dev/tty0` è un file speciale di dispositivo a caratteri
+    - numero: 3
+      slide: 63
+      traccia: |
+        Elencate la directory `/etc` nella modalità seguente:
+        - ricorsivamente;
+        - con i metadati;
+        - con i file nascosti.
+      soluzione: |
+        ``` bash
+        ls -alR /etc
+        ```
+    - numero: 4
+      slide: 71
+      traccia: |
+        Individuate il tipo di file dei file seguenti:
+        - `$HOME`
+        - `/tmp/.X11-unix/X0`
+        - `/dev/sda1`
+        - `/dev/tty0`
+        - `/usr/bin/editor`
+      soluzione: |
+        ``` bash
+        file $HOME /tmp/.X11-unix/X0 /dev/sda1 /dev/tty0 /usr/bin/editor
+        ```
+    - numero: 5
+      slide: 81
+      traccia: Si crei un file nuovo di contenuto nullo. Leggendo la pagina manuale del comando relativo, si individui un modo per impostare i timestamp al 1/1/1970, ore 00:00.
+      soluzione: |
+        ``` bash
+        touch -t 197001010000 new
+        stat new # per verificare la corretta applicazione dei timestamp
+        ```
+    - numero: 6
+      slide: 86
+      traccia: | 
+        Si crei la seguente gerarchia di directory: `dir1/dir2/dir3`
+      soluzione: |
+        ``` bash
+        mkdir -p dir1/dir2/dir3
+        ```
+    - numero: 7
+      slide: 95
+      traccia: |
+        Create dieci file vuoti con i nomi seguenti:
+        `file1` `file2` `file3` `file4` `file5` `file6` `file7` `file8` `file9` `file10`
+      soluzione: |
+        ``` bash
+        touch file{1..10}
+        rm file{1..10}
+        ```
+    - numero: 8
+      slide: 101
+      traccia: Create un backup della propria home directory nella directory `/tmp`.
+      soluzione: |
+        ``` bash
+        mkdir -p /tmp/backup_home_studente
+
+        # se si vuole copiare anche la root della home directory
+        # in questo caso, in /tmp/backup_home_studente ci sarà una directory "studente" contenente le varie Downloads, Documents, ecc.
+        cp -a ~ /tmp/backup_home_studente/
+
+        # se si vuole copiare solo il contenuto della home directory
+        # in questo modo le varie directory Downloads, Documents, ecc. saranno immediatamente sotto a /tmp/backup_home_studente, senza directory intermedie
+        cp -a ~/* /tmp/backup_home_studente/
+        ```
+        L'opzione `-a` di `cp` abilita la copia ricorsiva e preserva gli attributi dei file copiati.
+    - numero: 9
+      slide: 104
+      traccia: Studiate la pagina di manuale di `mv` e individuate un metodo per creare backup dei file sovrascritti.
+      soluzione: Si usa l'opzione `--backup`.
+    - numero: 10
+      slide: 139
+      traccia: |
+        Leggendo la pagina di manuale del comando opportuno, individuate un modo per stampare un file "al contrario" (dall'ultima alla prima riga). \
+        Applicate tale metodo per stampare le righe del file `/etc/passwd` dall'ultima alla prima.
+      soluzione: |
+        Per invertire l'ordine delle righe si usa il comando `tac`:
+        ``` bash
+        tac /etc/passwd
+        ```
+        Per trovare `tac` si esegue `apropos -s 1 'reverse'`. \
+        Nota: il comando `rev` non inverte le righe, ma i caratteri di ciascuna riga. Non è quindi il comando da usare per questo esercizio.
+    - numero: 11
+      slide: 148
+      traccia: |
+        Visualizzate nella forma canonica di `hexdump` i primi 32 byte dei file seguenti:
+        - `/usr/bin/ls`
+        - `/usr/bin/bash`
+        - `/usr/bin/which`
+
+        Notate qualche differenza?
+      soluzione: |
+        ``` bash
+        hexdump -C -n 32 /usr/bin/ls
+        hexdump -C -n 32 /usr/bin/bash
+        hexdump -C -n 32 /usr/bin/which
+        ```
+        `/usr/bin/ls` e `/usr/bin/bash` sono due eseguibili ELF, mentre `/usr/bin/which` è uno script.
+    - numero: 12
+      slide: 155
+      traccia: Individuate due modi distinti in head per stampare i primi 1024 byte del file `/bin/ls`.
+      soluzione: |
+        ``` bash
+        head -c 1024 /bin/ls
+        head -c 1K /bin/ls
+        ```
+    - numero: 13
+      slide: 164
+      traccia: Stampate il primo ed il settimo campo di ogni riga dell'archivio testuale `/etc/passwd`.
+      soluzione: |
+        ``` bash
+        cut -f 1,7 -d ':' /etc/passwd
+        ```
+    - numero: 14
+      slide: 166
+      traccia: Stampate i primi tre caratteri di ogni riga dell'archivio testuale `/etc/passwd`.
+      soluzione: |
+        ``` bash
+        cut -c 1-3 /etc/passwd
+        ```
+    - numero: 15
+      slide: 172
+      traccia: |
+        Producete un output multicolonnare nel modo seguente:
+        - Prima colonna. Una sequenza di numeri interi crescenti a partire da 1.
+        - Seconda colonna. Gli username esistenti nel sistema (primo campo).
+        - Terza colonna. Le shell assegnate agli username (ultimo campo).
+      soluzione: |
+        ``` bash
+        paste <(seq 1 $(wc -l /etc/passwd | cut -f 1 -d ' ')) <(cut -f 1 -d : /etc/passwd) <(cut -f 7 -d : /etc/passwd) | column -t
+        ```
+        `column -t` formatta l'output in modo decente.
+    - numero: 16
+      slide: 183
+      traccia: |
+        Ordinate nel modo seguente il file `/etc/passwd`:
+        - Ordinamento: numerico crescente.
+        - Campo: quarto.
+        - Separatore: due punti.
+      soluzione: |
+        ``` bash
+        # il pipe con cut serve soltanto per verificare che l'ordinamento sia stato effettivamente fatto
+        sort -n -t : -k 4 /etc/passwd | cut -f 4 -d :
+        ```
+    - numero: 17
+      slide: 190
+      traccia: Nell'ipotesi che un file di configurazione verifichi il pattern di shell `*.log`, individuate tutti i file di log nel sistema.
+      soluzione: |
+        ``` bash
+        find / -name '*.log' 2>/dev/null
+        ```
+    - numero: 18
+      slide: 207
+      traccia: |
+        Individuate tutti i file HTML nel sistema. \
+        In prima approssimazione, considerate come file HTML un file terminante in:
+        - `.html`
+        - `.htm`
+        - `.HTML`
+        - `.HTM`
+      soluzione: |
+        ``` bash
+        find / -regextype egrep -iregex '^.*html?$' 2>/dev/null
+        ```
+    - numero: 19
+      slide: 209
+      traccia: Individuate tutti i file più grandi di 1MB presenti nell'intero sistema.
+      soluzione: |
+        ``` bash
+        find / -size +1M -printf "%p %k KB\n" 2>/dev/null
+        ```
+    - numero: 20
+      slide: 212
+      traccia: |
+        Producete un elenco di tutti i file nel sistema con relativa dimensione:
+        - `/file1 dimensione1`
+        - `/file2 dimensione2`
+        - `...`
+      soluzione: |
+        ``` bash
+        find / -printf "%p %s\n" 2>/dev/null
+        ```
+    - numero: 21
+      slide: 215
+      traccia: |
+        Individuate tutti i file che verificano una delle proprietà seguenti:
+        - terminano con `.bak`;
+        - terminano con `~`.
+
+        Cancellate forzatamente i file individuati.
+      soluzione: |
+        ``` bash
+        find / -regextype egrep -regex '^.*(\.bak|~)$' 2>/dev/null -exec rm -f {} +
+        ```
+    - numero: 22
+      slide: 242
+      traccia: |
+        Stampate i valori di tutte le etichette `UUID` nel file `/etc/fstab`.
+        Se possibile, evitate di stampare la stringa `UUID=`.
+      soluzione: |
+        ``` bash
+        grep -Eo '[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}' /etc/fstab
+        ```
     - numero: 23
       slide: 254
       traccia: |
@@ -398,14 +694,22 @@
         Provate a creare nuovamente il gruppo `studenti`, questa volta usando il comando `groupadd`. \
         Verificate la creazione del nuovo gruppo.
       soluzione: |
-        *TODO*
+        Come utente `root`:
+        ``` bash
+        groupadd studenti
+        cat /etc/group | grep studenti # per verificare la creazione del gruppo
+        ```
     - numero: 5
       slide: 69
       traccia: |
         Provate a rimuovere nuovamente il gruppo `studenti`, questa volta usando il comando `groupdel`. \
         Verificate la rimozione del nuovo gruppo.
       soluzione: |
-        *TODO*
+        Come utente `root`:
+        ``` bash
+        groupdel studenti
+        cat /etc/group | grep studenti # per verificare l'eliminazione del gruppo
+        ```
     - numero: 6
       slide: 74
       traccia: |
@@ -471,7 +775,12 @@
         Aggiungete i seguenti gruppi secondari all'utente `studente2`: \
         `disk cdrom floppy audio dip video plugdev games netdev scanner bluetooth`
       soluzione: |
-        *TODO*
+        Come utente `root`:
+        ``` bash
+        # l'opzione -G vuole i gruppi separati da virgole, non da spazi
+        usermod -a -G disk,cdrom,floppy,audio,dip,video,plugdev,games,netdev,scanner,bluetooth studente2
+        cat /etc/group | grep studente2 | cut -f 1 -d : # per verificare se studente2 è stato aggiunto a tutti i gruppi indicati
+        ```
     - numero: 10
       slide: 101
       traccia: |
@@ -529,7 +838,7 @@
         - più file da 2 GB l'uno.
         Agganciate il disco fisso al controller SCSI del sistema guest in uso.
       soluzione: |
-        *TODO*
+        Seguire le istruzioni di VirtualBox/VMWare.
     - numero: 2
       slide: 54
       traccia: |
@@ -673,7 +982,9 @@
       traccia: |
         Visualizzate i trenta file più grandi nell'intero file system.
       soluzione: |
-        *TODO*
+        ``` bash
+        find / -printf "%s %p\n" 2>/dev/null | sort -rn -t ' ' -k 1 | head -n 30
+        ```
     - numero: 10
       slide: 101
       traccia: |
@@ -683,7 +994,8 @@
         ```
         Verificate la correttezza del comando.
       soluzione: |
-        *TODO*
+        Il comando è sbagliato perchè non specifica il delimitatore di `/etc/passwd`, che è `:`. \
+        Il comando corretto è `cut -f1,4 -d : /etc/passwd | head -10`.
     - numero: 11
       slide: 109
       traccia: |
@@ -769,13 +1081,17 @@
         Create un utente `docente`, se già non esiste. \
         Lanciate una shell da utente `docente`.
       soluzione: |
-        *TODO*
+        ``` bash
+        su - docente
+        ```
     - numero: 5
       slide: 65
       traccia: |
         Lanciate da utente `prova` un comando che mostri solo file e directory nascosti nella sua home directory.
       soluzione: |
-        *TODO*
+        ``` bash
+        su -c 'ls -ad .*' - prova
+        ```
     - numero: 6
       slide: 101
       traccia: |
@@ -794,7 +1110,9 @@
       traccia: |
         Eseguite come utente `prova` e gruppo primario `disk` il comando che legge il primo disco rigido SATA.
       soluzione: |
-        *TODO*
+        ``` bash
+        sudo -u prova -g disk cat /dev/sda1
+        ```
     - numero: 8
       slide: 113
       traccia: |
@@ -802,7 +1120,10 @@
         - `slabtop`
         - `cat /dev/mem`
       soluzione: |
-        *TODO*
+        Aggiungere la riga seguente al file `/etc/sudoers`:
+        ```
+        studente ALL=(root:root) NOPASSWD: /usr/bin/slabtop, /usr/bin/cat /dev/mem
+        ```
     - numero: 9
       slide: 119
       traccia: |
@@ -814,7 +1135,13 @@
 
         Con quali diritti esegue `newtop`?
       soluzione: |
-        *TODO*
+        ``` bash
+        cp -a /usr/bin/top ./newtop
+        sudo chown root:root newtop
+        sudo chmod u+s newtop
+        ./newtop
+        ```
+        `newtop` esegue con i privilegi di `root`, anche se lanciato da `studente`.
     - numero: 10
       slide: 124
       traccia: |
@@ -837,7 +1164,8 @@
         Assegnate le capability `cap_net_raw` agli insiemi permitted ed effective sul file `newping`. \
         Eseguite `newping 8.8.8.8`. Funziona?
       soluzione: |
-        *TODO*
+        Nota: su Debian 11 il comando `/usr/bin/ping` non ha nessuna capability e riesce ad eseguire il ping lo stesso, grazie ad un servizio del sistema operativo. 
+        L'esercizio non è quindi fattibile su una macchina di questo tipo. \
 - numero: 13
   titolo: Gestione software Debian
   esercizi:
