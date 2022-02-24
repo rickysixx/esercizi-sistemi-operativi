@@ -1,0 +1,322 @@
+- domanda: Cercare, a partire dalla directory corrente, i file di testo.
+  soluzione: |
+    ``` bash
+    find . -type f -exec file {} \; | grep -E "(ASCII|UTF-8)"
+    ```
+    - il filtro `-type f` di `find` cerca soltanto dei file. Non è indispensabile, ma è utile per far scartare immediatamente a `find` le directory (che ovviamente non sono file di testo).
+    Senza quest'opzione le directory verrebbero scartate da `grep`.
+
+    **ATTENZIONE**: un comando di questo tipo è un **ERRORE GRAVE**:
+    ``` bash
+    find . -type f -name "*.txt"
+    ```
+    In Unix le estensioni **NON ESISTONO**, perciò è sbagliato usare `find` per cercare per estensione. \
+    Inoltre il comando è anche sbagliato dal punto di vista funzionale perché ci sono solo i file `.txt` come file di testo, ma anche moltissimi altri file (HTML, XML, file C/C++, ecc.).
+- domanda: Spiegare il job control con esempi.
+  soluzione: |
+    Il generico comando che viene lanciato utilizzando Bash prende il nome di **pipeline**. Ogni comando in una pipeline genera un processo, quindi la pipeline forma
+    un **gruppo di processi** (o **job**). Il job control è l'insieme dei meccanismi e dei comandi che Bash mette a disposizione per gestire questi processi. \
+    Un job può essere in primo piano (foreground) oppure in background. I job in foreground hanno pieno controllo del terminale da cui sono stati lanciati:
+    l'STDIN e l'STDOUT dei comandi corrispondono a quelli del terminale. I job in background, invece, non possono accedere allo STDIN del terminale (e se lo fanno ricevono
+    un segnale dal kernel che li sospende). Possono però accedere al suo STDOUT e STDERR, sebbene ciò possa essere impedito impostando l'opzione `TOSTOP` con il comando `stty tostop`. \
+    Nei sistemi operativi GNU/Linux, i processi vengono raggruppati in **sessioni**. Una sessione è un insieme di gruppi di processi che condividono lo stesso terminale. Ogni sessione
+    è identificata da un **session ID**, che corrisponde al PID del **session leader** (il primo processo lanciato in una sessione).
+    I comandi a disposizione sono diversi:
+    - `jobs`: elenca i job attivi;
+    - `fg`: porta in primo piano un job;
+    - `bg`: porta in background un job
+    Ogni job è identificato da un **job id** (un numero intero che parte da 1). \
+    Il job control è nato per permettere di alternare più comandi utilizzando un unico terminale.
+- domanda: Modificare il browser di default (il pacchetto virtuale del browser).
+  soluzione: |
+    ```
+    studente@riccardo-vm-debian:~$ update-alternatives --get-selections | grep browser
+    gnome-www-browser              auto     /usr/bin/firefox-esr
+    x-www-browser                  auto     /usr/bin/firefox-esr
+    ```
+    Il pacchetto virtuale che ci interessa è `gnome-www-browser`. \
+    ```
+    studente@riccardo-vm-debian:~$ update-alternatives --config gnome-www-browser 
+    There is only one alternative in link group gnome-www-browser (providing /usr/bin/gnome-www-browser): /usr/bin/firefox-esr
+    Nothing to configure.
+    ```
+    Non c'è nessuna alternativa installata per il pacchetto virtuale. Proviamo a cercare quali sono le alternative installabili:
+    ```
+    studente@riccardo-vm-debian:~$ sudo apt install gnome-www-browser
+    Reading package lists... Done
+    Building dependency tree... Done
+    Reading state information... Done
+    Package gnome-www-browser is a virtual package provided by:
+      firefox-esr 91.6.0esr-1~deb11u1
+      epiphany-browser 3.38.2-1+deb11u1
+      chromium 98.0.4758.102-1~deb11u1
+    You should explicitly select one to install.
+    E: Package 'gnome-www-browser' has no installation candidate
+    ```
+    Installiamo `chromium` e configuriamolo come alternativa per `gnome-www-browser`:
+    ```
+    studente@riccardo-vm-debian:~$ sudo apt install chromium
+    studente@riccardo-vm-debian:~$ update-alternatives --list gnome-www-browser
+    /usr/bin/chromium
+    /usr/bin/firefox-esr
+    studente@riccardo-vm-debian:~$ sudo update-alternatives --config gnome-www-browser
+    There are 2 choices for the alternative gnome-www-browser (providing /usr/bin/gnome-www-browser).
+    Selection    Path                  Priority   Status
+    ------------------------------------------------------------
+    * 0            /usr/bin/firefox-esr   70        auto mode
+      1            /usr/bin/chromium      40        manual mode
+      2            /usr/bin/firefox-esr   70        manual mode
+    Press <enter> to keep the current choice[*], or type selection number: 1
+    update-alternatives: using /usr/bin/chromium to provide /usr/bin/gnome-www-browser (gnome-www-browser) in manual mode
+    ```
+- domanda: Scrivere uno script in bash che dati due numeri come argomenti stampa il maggiore.
+  soluzione: |
+    ``` bash
+    declare -i a=$1;
+    declare -i b=$2;
+
+    if [ $a -gt $b ]; then
+        echo $a;
+    elif [ $b -gt $a ]; then
+        echo $b;
+    fi
+
+    exit 0;
+    ```
+- domanda: Creare un nuovo utente di nome `studente2` e fai in modo che `studente` posso eseguire la shell di `studente2`.
+  soluzione: |
+    ```
+    root@riccardo-vm-debian:~# useradd -m studente2
+    root@riccardo-vm-debian:~# visudo
+    ```
+    Se `/etc/sudoers` contiene già la riga 
+    ```
+    %sudo  ALL=(ALL:ALL) ALL
+    ```
+    e `studente` fa parte del gruppo `sudo`, allora non c'è bisogno di fare nessuna modifica. Altrimenti, bisogna aggiungere la riga seguente:
+    ```
+    studente    ALL=(studente2:studente2) /bin/bash
+    ```
+    Salvare il file `/etc/sudoers`, aprire un nuovo terminale (basta anche una nuova scheda) ed eseguire:
+    ```
+    studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame$ sudo -s -u studente2
+    [sudo] password for studente: 
+    studente2@riccardo-vm-debian:/home/studente/sistemi-operativi/domande-esame$ whoami
+    studente2
+    ```
+- domanda: Fammi un esempio di fork bomb e parlami di tutto ciò che lo riguarda.
+  soluzione: |
+    Fork bomb da riga di comando:
+    ```
+    :() { : | : & }; :
+    ```
+    La fork bomb è un attacco di tipo denial of service (DOS). Il suo scopo è quello di creare tantissimi processi, senza dare il tempo al kernel di terminarli,
+    causando un rapido esaurimento dei descrittori di processo disponibili (e conseguente blocco/crash della macchina). \
+    La fork bomb consiste in una funzione ricorsiva particolare:
+    - ad ogni invocazione della funzione, grazie all'operatore `|`, viene generato un nuovo processo;
+    - i nuovi processi vengono lanciati in background, grazie all'operatore `&`;
+    Poiché la morte del processo padre non implica la morte dei processi figli, la funzione continuerà a creare processi all'infinito. \
+    Un metodo per difendersi dalla fork bomb è impostare un numero massimo di processi che un utente può lanciare. Per farlo si usa il comando `ulimit`.
+- domanda: Creare uno script che accetta un numero come parametro e stampa un messaggio se è divisibile sia per 5 che per 7 oppure no.
+  soluzione: |
+    ``` bash
+    if [ $(($1 % 5)) = 0 -a $(($1 % 7)) = 0 ]; then    
+        echo "${1} è divisibile sia per 5 che per 7.";
+    else
+        echo "${1} non è divisibile sia per 5 che per 7.";
+    fi
+
+    exit 0;
+    ```
+- domanda: Configura file `sudoers` per eseguire `slabtop` con l'utente.
+  soluzione: |
+    Aggiungere la riga seguente al file `/etc/sudoers`:
+    ```
+    studente  ALL=(ALL:ALL) /usr/bin/slabtop
+    ```
+- domanda: Mostra i magic byte di un file e spiega.
+  soluzione: |
+    I magic byte sono dei byte, posti in determinati offset, che servono per identificare la tipologia di file. Un esempio di magic byte è la sequenza
+    'ELF' presente nei file eseguibili UNIX (es. `/bin/ls`). \
+    Per vedere i magic byte si può usare il comando `less` oppure (meglio) `hexdump`:
+    ```
+    studente@riccardo-vm-debian:~/sistemi-operativi$ hexdump -C -n 5 /bin/ls
+    00000000  7f 45 4c 46 02                                    |.ELF.|
+    00000005
+    ```
+- domanda: Trovare i file più piccoli di 1 MB e con il setuserid impostato.
+  soluzione: |
+    ``` bash
+    find / -type f -perm -u=s -size -$((1024*1024))c -printf "%p %k KB\n" 2>/dev/null
+    ```
+    Note importanti:
+    - attenzione al `-` davanti a `-u=s`. Con questo comando, `find` include tutti i file che hanno il SETUID impostato e non fa alcun controllo sugli altri permessi.
+    Senza il `-` (es. `-perm u=s`) `find` include tutti i file per i quali l'unico permesso dell'utente è il bit SETUID;
+    - attenzione al valore di `-size`: mettere `-1M` non funziona, bisogna usare esplicitamente il valore di `1024*1024` byte (vedere il manuale di `find` per i dettagli)
+- domanda: Trovare le dipendenze di `bash` sia in forma scritta che grafica.
+  soluzione: |
+    ``` bash
+    apt depends bash # dipendenze in forma scritta
+    
+    # dipendenze in forma grafica
+    dot -Tsvg <(debtree bash) > bash.svg
+    inkscape bash.svg
+    ```
+- domanda: Modificare l'editor di sistema.
+  soluzione: |
+    1. si cerca il pacchetto virtuale:
+    ```
+    studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame$ update-alternatives --get-selections | grep editor
+    editor                         manual   /usr/bin/vim.basic
+    gnome-text-editor              auto     /usr/bin/gedit
+    ```
+    2. si elencano le alternative già installate:
+    ```
+    studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame$ update-alternatives --list editor
+    /bin/nano
+    /usr/bin/vim.basic
+    /usr/bin/vim.tiny
+    ```
+    3. si cambia il default con `update-alternatives --config editor` (da eseguire come `root`).
+- domanda: Trovare in che file `apt-update` salva le informazioni sui pacchetti tramite `strace`.
+  soluzione: |
+    1. verificare se `strace` è già installato (si può usare `type -a strace`) ed eventualmente installarlo con `sudo apt install strace`;
+    2. eseguire `strace -e openat apt update 2>&1 | less`
+    3. si nota che `apt update` apre diversi file. In particolare apre la directory `/var/lib/apt/lists` che contiene i nomi delle repository (main, non-free e contrib).
+    I file presenti in questa directory sono i metadati dei pacchetti.
+- domanda: Spiegare il meccanismo di controllo degli accessi su un determinato file.
+  soluzione: |
+    I permessi in un file sono raggruppati in 3 terne: `user`, `group` ed `others`. Ciascuna di queste terne contiene i bit `r`, `w` ed `x` che, se presenti, consentono
+    rispettivamente l'accesso in lettura, scrittura ed esecuzione.
+    Quando un processo tenta di accedere ad un file, il kernel avvia un controllo per verificare che il processo abbia il permesso di accedere a quel file. \
+    Se lo **user ID effettivo** è `0` (cioè si tratta dell'utente `root`), il controllo termina immediatamente e l'accesso al file viene permesso: l'utente `root` ha il permesso 
+    di fare qualsiasi cosa. \
+    Altrimenti, i permessi che il processo ha sul file cambiano a seconda della prima condizione che si verifica tra queste:
+    - lo user ID effettivo del processo è lo user ID dell'owner del file. I permessi del processo sono quelli della prima terna;
+    - il group ID primario (o uno dei group ID secondari) effettivo del processo è l'ID del gruppo di lavoro associato al file. I permessi del processo sono quelli della seconda terna;
+    - se le due condizioni sopra non si verificano, i permessi del processo sono quelli della terza terna.
+- domanda: L'albero dei processi con la visualizzazione dei processi relativo al desktop environment e spiegazione dei vari componenti del desktop manager.
+  soluzione: |
+    Eseguire `pstree | less` e poi cercare la stringa `gnome`. \
+    I componenti nel desktop manager sono:
+    - il server grafico, che gestisce le richieste di disegno da parte dei vari componenti grafici e le trasforma in richieste da mandare alla scheda video. In GNOME 3
+    viene utilizzato Wayland. Con `pstree` si notano diversi processi e thread che contengono `wayland` nel nome.
+    - il window manager, che gestisce il disegno e il posizionamento dei vari componenti grafici. In GNOME 3 viene utilizzato Mutter.
+    - il graphical display manager, che permette agli utenti di effettuare l'autenticazione sul sistema operativo tramite interfaccia grafica. In GNOME 3 viene utilizzato GDM.
+- domanda: Trovare quale pacchetto fornisce il comando `dd`.
+  soluzione: |
+    ```
+    studente@riccardo-vm-debian:~$ type -a dd
+    dd is /usr/bin/dd
+    dd is /bin/dd
+    studente@riccardo-vm-debian:~$ apt-file -x search '^/bin/dd$'
+    coreutils: /bin/dd
+    ```
+    `/bin/dd` si trova quindi nel pacchetto `coreutils`. \
+    Non c'è bisogno di controllare in che pacchetto sia `/usr/bin/dd`, perchè si tratta dello stesso binario di `/bin/dd`, infatti:
+    ```
+    studente@riccardo-vm-debian:~$ shasum /usr/bin/dd /bin/dd
+    0a56bf92645326a4066a797496d43a633d299dc8  /usr/bin/dd
+    0a56bf92645326a4066a797496d43a633d299dc8  /bin/dd
+    ```
+    Evidentemente `/bin/dd` viene copiato in `/usr/bin` all'installazione del pacchetto `coreutils`.
+- domanda: Scarica pacchetti sorgenti `bash` e trovare il file con il main.
+  soluzione: |
+    Assicurarsi di avere la repository dei sorgenti attiva nel file `/etc/apt/sources.list`:
+    ```
+    deb-src https://deb.debian.org/debian/ bullseye main non-free contrib
+    ```
+    Eseguire il comando `apt-get source bash` (non è necessario essere `root`) per scaricare i sorgenti di `bash`. **ATTENZIONE**: i sorgenti vengono scaricati nella
+    directory corrente. \
+    Andare nella directory `bash-5.1`:
+    ```
+    studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame/sorgenti-bash/bash-5.1$ grep -IEr "main\(int" *
+    aclocal.m4:main(int c, char **v)
+    configure:main(int c, char **v)
+    debian/bash.preinst.c:int main(int argc, char *argv[])
+    examples/loadables/perl/iperl.c:perl_main(int argc, char **argv, char **env)
+    support/man2html.c:main(int argc, char **argv)
+    ```
+- domanda: Far eseguire `slabtop` senza password ad un utente qualsiasi.
+  soluzione: |
+    Modifica il file `/etc/sudoers` aggiungendo questa riga:
+    ```
+    ALL ALL=(ALL:ALL) NOPASSWD: /usr/bin/slabtop
+    ```
+- domanda: Trova tutti i file con setuid e utente creatore root, poi quelli con setgid e gruppo di lavoro root e infine quelli che hanno capabilities.
+  soluzione: |
+    Tutti i file con SETUID impostato e `root` come owner:
+    ``` bash
+    find / -type f -user root -perm -u=s -printf "%M %u %p\n" 2>/dev/null
+    ```
+    Tutti i file con SETGID impostato e `root` come gruppo:
+    ``` bash
+    find / -type f -group root -perm -g=s -printf "%M %g %p\n" 2>/dev/null
+    ```
+    Tutti i file con delle capabilities:
+    ``` bash
+    getcap -r / 2>/dev/null
+    ```
+- domanda: Fai uso delle named pipe con una piccola demo.
+  soluzione: |
+    ``` bash
+    mkfifo fifo1 fifo2
+    find / -printf "%s %p\n" > fifo1
+    sort -rn -k 1 -t ' ' < fifo1 > fifo2
+    head -n 5 < fifo2
+    rm fifo1 fifo2
+    ```
+- domanda: Trova tutti i pacchetti Debian che contengono librerie statiche
+  soluzione: |
+    Per convenzione, il nome dei pacchetti che contengono librerie statiche inizia con `lib` e termina con `-dev`. Per trovare questi pacchetti:
+    ``` bash
+    apt search --names-only '^lib.*-dev$'
+    ```
+- domanda: Dimostrare in almeno 2 modi diversi che `/bin/dd` è un eseguibile.
+  soluzione: |
+    Si usano i comandi `file' ed `hexdump`.
+- domanda: Trovare quale disco contiene il file system principale per poi stampare solo le stringhe.
+  soluzione: |
+    ``` bash
+    findmnt /
+    sudo strings /dev/sda1
+    ```
+- domanda: Albero processi di LibreOffice
+  soluzione: |
+    1. aprire LibreOffice Writer;
+    2. eseguire `pstree -ca | less` e cercare per stringa `writer` (oppure `office`)
+    3. se si vuole vedere **solo** l'albero di LibreOffice, usare `pstree -s`.
+- domanda: Trovare tutti gli script bash del sistema.
+  soluzione: |
+    ``` bash
+    find / -type f -exec file {} \; 2> /dev/null | grep "Bourne-Again shell script"
+    ```
+- domanda: Dimostrare che un file gif lo è effettivamente
+  soluzione: |
+    Si usa il comando `file`.
+- domanda: Esempio di pacchetti virtuali, cambiare l'editor di default, spiegare cosa significa la colonna stato e priorità.
+  soluzione: |
+    - esempio di pacchetto virtuale: uno qualsiasi che si trova nella directory `/etc/alternatives`;
+    - cambiare l'editor di default: `update-alternatives --config editor` (da lanciare come `root`);
+    - la colonna "stato" indica com'è stata selezionata l'alternativa di default (se è stata selezionata automaticamente o se è stata selezionata manualmente dall'amministratore).
+    La priorità è l'ordine delle alternative. Il sistema sceglie automaticamente l'alternativa che ha la priorità più alta. \
+    La priorità delle alternative viene ignorata se la scelta viene fatta manualmente.
+- domanda: Stampa dipendenze dirette ed inverse di firefox.
+  soluzione: |
+    1. si usa `update-alternatives --list gnome-www-browser` per scoprire il percorso preciso dell'eseguibile di Firefox (`/usr/bin/firefox-esr`);
+    2. si usa `apt-file search /usr/bin/firefox-esr` per scoprire il nome preciso del pacchetto che contiene Firefox (`firefox-esr`);
+    3. si esegue `apt depends firefox-esr` per le dipendenze dirette, `apt rdepends firefox` per le dipendenze indirette
+- domanda: |
+    Realizzare una tabella in questo modo:
+    ` Indici numerici | Username Unix | hash password `
+  soluzione: |
+    Come utente `root`:
+    ``` bash
+    paste <(seq 1 $(cat /etc/shadow | wc -l)) <(cut -f 1 -d : /etc/shadow) <(cut -f 2 -d : /etc/shadow) | column -t -o '|'
+    ```
+    Il comando `column` serve per formattare l'input in colonne. L'opzione `-t` formatta l'output in una tabella, l'opzione `-o` specifica il delimitatore di ogni colonna.
+
+
+    
+    
+

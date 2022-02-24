@@ -1,0 +1,1048 @@
+- numero: 5
+  titolo: Bash
+  esercizi:
+    - numero: 1
+      slide: 31
+      traccia: |
+        Aprite una nuova finestra di terminale. \
+        Dichiarate una variabile di nome `a` con attributo intero e valore pari a `8/3`. \
+        Stampate il valore della variabile. 
+        
+        Notate qualcosa di strano?
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ declare -i a=8/3
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ echo $a
+        2
+        ```
+        Il valore di `a` è stato troncato: anziché essere `2.666667` è `2`. Questo perché Bash gestisce soltanto numeri interi.
+    - numero: 2
+      slide: 35
+      traccia: |
+        Aprite una nuova finestra di terminale. \
+        Dichiarate una variabile `a` con attributo intero. \
+        Leggete il valore `8/3` tramite terminale nella variabile. \
+        Stampate il valore della variabile.
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ declare -i a
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ read a
+        8/3
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ echo $a
+        2
+        ```
+        Come nell'esercizio precedente, Bash ha troncato il valore di `8/3`.
+    - numero: 3
+      slide: 54
+      traccia: |
+        Eseguite i due comandi seguenti e spiegate la differenza di comportamento:
+        - `echo -e a\n`
+        - `echo -e a\\n`
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ echo -e a\n
+        an
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ echo -e a\\n
+        a
+        
+        ```
+        - `echo -e a\n`: prima di eseguire `echo`, Bash ha interpretato l'escape `\n`. Non essendo `n` un carattere speciale, il suo escape è `n` stesso e quindi Bash manda
+        la stringa `an` ad `echo`.
+        - `echo -e a\\n`: prima di eseguire `echo`, Bash interpreta l'escape `\\n` come `\n`, mandando quindi la stringa `a\n` ad `echo`, il quale stampa
+        `a` seguito da una riga vuota.
+    - numero: 4
+      slide: 94
+      traccia: |
+        Sia `f` una variabile contenente il valore `image.jpg`. \
+        Si chiede di produrre una serie di trasformazioni che cambino il valore di `f` in `image.png`.
+      soluzione: |
+        ``` 
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ f="image.jpg"
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ f="${f/.jpg/.png}"
+        studente@riccardo-vm-debian:~/sistemi-operativi/lezione-5-bash$ echo $f
+        image.png
+        ```
+    - numero: 5
+      slide: 101
+      traccia: |
+        Definite una variabile `a` con attributo intero e valore a vostra scelta. Scrivete uno statement che permetta di stabilire se `$a` sia un numero pari o dispari.
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame$ declare -i a=5
+        studente@riccardo-vm-debian:~/sistemi-operativi/domande-esame$ echo $((a % 2))
+        1
+        ```
+    - numero: 6
+      slide: 108
+      traccia: |
+        Eseguite i due comandi seguenti:
+        ``` bash
+        ls file_non_esistente
+        LANG=C ls file_non_esistente
+        ```
+
+        Notate qualcosa di diverso nell'output dei due programmi?
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~/sistemi-operativi$ ls file_non_esistente
+        ls: cannot access 'file_non_esistente': No such file or directory
+        studente@riccardo-vm-debian:~/sistemi-operativi$ LANG=C ls file_non_esistente
+        ls: cannot access 'file_non_esistente': No such file or directory
+        ```
+        Avendo già di default la lingua inglese, non si notano differenze tra i due comandi. Se però si prova ad impostare la lingua italiana, si scopre che `LANG=C`
+        setta la lingua in inglese.
+    - numero: 7
+      slide: 118
+      traccia: |
+        Effettuate il test della condizione seguente nei due modi previsti da BASH:
+        ```
+        stringa1 > stringa2
+        ```
+        Stampate il risultato del test in entrambi i casi.
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~$ stringa1="pippo"
+        studente@riccardo-vm-debian:~$ stringa2="ciccio"
+        studente@riccardo-vm-debian:~$ test stringa1 \> stringa2
+        studente@riccardo-vm-debian:~$ echo $?
+        1
+        studente@riccardo-vm-debian:~$ [ stringa1 \> stringa2 ]
+        studente@riccardo-vm-debian:~$ echo $?
+        1
+        ```
+    - numero: 21
+      slide: 364
+      traccia: |
+        Individuate le diverse tipologie del comando seguente:
+        - `kill`
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~$ type -a kill
+        kill is a shell builtin
+        kill is /usr/bin/kill
+        kill is /bin/kill
+        ```
+- numero: 7
+  titolo: File
+  esercizi:
+    - numero: 23
+      slide: 254
+      traccia: |
+        Create un collegamento fisico di nome passwd al file `/etc/passwd`. Ci riuscite?
+
+        Create un collegamento simbolico di nome passwd al file `/etc/passwd`. Ci riuscite?
+      soluzione: |
+        La creazione di un link fisico fallisce, perché l'owner di `/etc/passwd` è `root`:
+        ```
+        $ ln /etc/passwd link_hard_etc_passwd
+
+        ln: failed to create hard link 'link_hard_etc_passwd' => '/etc/passwd': Operation not permitted
+        ```
+        La creazione di un link simbolico, invece, va a buon fine:
+        ```
+        $ ln -s /etc/passwd link_soft_etc_passwd
+        $ ls -l link_soft_etc_passwd 
+
+        lrwxrwxrwx 1 studente studente 11 Feb 15 09:52 link_soft_etc_passwd -> /etc/passwd
+        ```
+    - numero: 24
+      slide: 275
+      traccia: |
+        Create tre archivi della vostra home directory:
+        - `/tmp/home.tar.gz`
+        - `/tmp/home.tar.bz2`
+        - `/tmp/home.tar.xz`
+
+        Come variano le dimensioni degli archivi?
+      soluzione: |
+        ``` bash
+        tar --exclude='.[^/]*' -czv -f /tmp/home.tar.gz .
+        tar --exclude='.[^/]*' -cjv -f /tmp/home.tar.bz2 .
+        tar --exclude='.[^/]*' -cJv -f /tmp/home.tar.xz .
+        ```
+
+        L'opzione `--exclude='.[^/]*'` non è richiesta dall'esercizio e serve per evitare di includere nell'archivio directory e file nascosti presenti nella home.
+
+        ``` 
+        $ ls -lh /tmp/home.tar*
+
+        -rw-r--r-- 1 studente studente 95M Feb 15 11:27 /tmp/home.tar.bz2
+        -rw-r--r-- 1 studente studente 94M Feb 15 11:26 /tmp/home.tar.gz
+        -rw-r--r-- 1 studente studente 94M Feb 15 11:28 /tmp/home.tar.xz
+        ```
+    - numero: 25
+      slide: 283
+      traccia: |
+        Create un archivio della vostra home directory: `/home/studente/home.7z`. \
+        Cifrate l'archivio con la chiave simmetrica `secret`. \
+        (Nella speranza che l'archivio non sia gigantesco) \
+        Estraete l'archivio nella directory /tmp.
+      soluzione: |
+        ``` bash
+        7z a -xr'!.*' -psecret home.7z ./
+        7z x -o'/tmp' home.7z
+        ```
+
+        L'opzione `-xr'!.*'` non è richiesta dall'esercizio. Serve per escludere directory e file nascosti presenti nella home.
+    - numero: 26
+      slide: 288
+      traccia: |
+        Testate la leggibilità e la scrivibilità del file seguente:
+        - `/etc/shadow`
+
+        Riuscite ad accedere al file in qualche modo?
+      soluzione: |
+        ```
+        $ test -r /etc/shadow
+        $ echo $?
+
+        1
+        ```
+
+        Il file non risulta leggibile dall'utente corrente. È però leggibile da `root`:
+
+        ```
+        # test -r /etc/shadow && echo $?
+
+        0
+        ```
+    - numero: 27
+      slide: 302
+      traccia: |
+        Producete un elenco di tutti i file nel sistema con relativa dimensione:
+        - `/file1 dimensione1`
+        - `/file2 dimensione2`
+        - `...`
+
+        Salvate l'output nel file `out.txt`. \
+        Scartate i messaggi di errore.
+      soluzione: |
+        ``` bash
+        find / -printf "%p %s\n" > out.txt 2>/dev/null
+        ```
+    - numero: 28
+      slide: 307
+      traccia: |
+        Usando i comandi interni exec e read, copiate le prime cinque righe di `/etc/passwd` nel file `passwdtop5.txt`.
+      soluzione: |
+        ``` bash
+        exec 3< /etc/passwd;
+        exec 4>> passwdtop5.txt;
+
+        for i in {1..5}; do
+            read -u 3 line;
+            echo $line 1>&4;
+        done
+
+        exec 3<&-;
+        exec 4>&-;
+        ```
+    - numero: 29
+      slide: 314
+      traccia: |
+        Individuate i dieci file più grandi all'interno della vostra home directory.
+      soluzione: |
+        Con file temporanei:
+        ``` bash
+        find ~ -printf "%p %s\n" > find-output.txt 2>/dev/null
+        sort -nr -t " " -k 2 find-output.txt > sort-output.txt
+        head -n 10 sort-output.txt
+        ```
+        Con pipe:
+        ``` bash
+        find ~ -printf "%p %s\n" 2>/dev/null | sort --numeric-sort --reverse --field-separator=" " --key 2 | head -n 10
+        ```
+    - numero: 30
+      slide: 325
+      traccia: |
+        Individuate tutti i file in `/etc` che terminano con l'estensione `.txt`.
+      soluzione: |
+        ``` bash
+        find /etc -name "*.txt" 2>/dev/null
+        ```
+- numero: 8
+  titolo: Autenticazione
+  esercizi:
+    - numero: 1
+      slide: 26
+      traccia: |
+        Create un nuovo utente con nome di login `studente2`.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        adduser studente2
+        ```
+    - numero: 2
+      slide: 39
+      traccia: |
+        Identificate la home directory e l'interprete dei comandi dell'utente `studente2`.
+      soluzione: |
+        ``` bash
+        grep "studente2" /etc/passwd | cut -f 6-7 -d :
+        ```
+    - numero: 3
+      slide: 42
+      traccia: |
+        Cancellate l'utente `studente2`.
+      soluzione: |
+        Come utente `root`:
+        ```
+        deluser --remove-home studente2
+        ```
+    - numero: 4
+      slide: 46
+      traccia: |
+        Cancellate la directory `/home/studente2`. Provate a creare nuovamente l'utente `studente2`, questa volta usando il comando `useradd`. \
+        Cercate di capire se sia stata creata una home directory per l'utente `studente2`.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        useradd studente2
+        ```
+        Eseguendo `cat /etc/passwd | grep studente2` si nota che l'utente è stato associato ad una home directory, ma in `/home` tale directory non è stata creata. \
+        Per farlo, bisognava aggiungere l'opzione `-m` al comando `useradd`.
+    - numero: 5
+      slide: 48
+      traccia: |
+        Provate a rimuovere nuovamente l'utente `studente2`, questa volta usando il comando `userdel`. \
+        Cercate di capire se la home directory è stata rimossa.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        userdel studente2
+        ```
+        Di default `userdel` **non** elimina la home directory. Per farlo occorre aggiungere l'opzione `-r`.
+    - numero: 6
+      slide: 55
+      traccia: |
+        Assegnate l'interprete dei comandi `/bin/zsh` all'utente `studente2`.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        useradd -d /home/studente2 studente2
+        usermod -s "/bin/zsh" studente2
+        ```
+    - numero: 7
+      slide: 59
+      traccia: |
+        Autenticatevi come `studente2`. \
+        Eseguite le operazioni seguenti:
+        - impostazione del numero di telefono di lavoro al valore `12345678`;
+        - cambio della password al valore `strongpassword`;
+        - cambio di shell a `/bin/rbash`.
+
+        Verificate l'applicazione delle modifiche.
+      soluzione: |
+        ``` bash
+        su - studente2
+        chfn -h "12345678" # cambia il numero di telefono
+        passwd studente2
+        chsh -s /bin/rbash studente2
+        ```
+        Per verificare il cambio di shell e di numero di telefono si può eseguire `cat /etc/passwd | grep studente2`. \
+        Per verificare il cambio di password basta ri-loggarsi con `studente2`.
+    - numero: 8
+      slide: 60
+      traccia: |
+        Autenticatevi come `studente2`.
+        Eseguite le operazioni seguenti:
+        - impostazione del campo “Altro” al valore `Dirigente`.
+
+        Verificate l'applicazione delle modifiche. \
+        Notate qualche stranezza?
+      soluzione: |
+        ``` bash
+        su - studente2
+        chfn -o "Dirigente" studente2
+        ```
+        L'esecuzione di `chfn` con l'opzione `-o` restituisce un errore:
+        ```
+        chfn: Permission denied.
+        ```
+        Leggendo il manuale di `chfn` si scopre proprio che l'opzione `-o` può essere utilizzata solo dagli amministratori:
+        > -o, --other OTHER \
+        > Change the user's other GECOS information. This field is used to store accounting information used by other applications, and can be changed only by a superuser.
+- numero: 9
+  titolo: Autorizzazione
+  esercizi:
+    - numero: 1
+      slide: 55
+      traccia: |
+        Create un nuovo gruppo di nome `studenti`.
+      soluzione: |
+        Come utente `root`:
+        ```
+        groupadd studenti
+        ```
+    - numero: 2
+      slide: 62
+      traccia: |
+        Trovate l'identificatore del gruppo `studenti`.
+      soluzione: |
+        Si guarda il 3° campo nel file `/etc/group`:
+        ``` bash
+        cat /etc/group | grep studenti | cut -f 3 -d :
+        ```
+    - numero: 3
+      slide: 65
+      traccia: |
+        Cancellate il gruppo `studenti`.
+      soluzione: |
+        Come utente `root`:
+        ```
+        groupdel studenti
+        ```
+    - numero: 4
+      slide: 68
+      traccia: |
+        Provate a creare nuovamente il gruppo `studenti`, questa volta usando il comando `groupadd`. \
+        Verificate la creazione del nuovo gruppo.
+      soluzione: |
+        *TODO*
+    - numero: 5
+      slide: 69
+      traccia: |
+        Provate a rimuovere nuovamente il gruppo `studenti`, questa volta usando il comando `groupdel`. \
+        Verificate la rimozione del nuovo gruppo.
+      soluzione: |
+        *TODO*
+    - numero: 6
+      slide: 74
+      traccia: |
+        Create un gruppo `studenti` (se non è già esistente). \
+        Modificate le seguenti proprietà del gruppo:
+        - Nome gruppo → `studenti2`;
+        - Identificatore del gruppo → `1300`.
+        
+        Verificate la corretta applicazione delle modifiche.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        groupmod -n studenti2 -g 1300 studenti
+        cat /etc/group | grep studenti2 # per verificare le modifiche
+        ```
+    - numero: 7
+      slide: 81
+      traccia: |
+        Create un utente `studente2` (se non esiste già). \
+        Impostate i seguenti nuovi gruppi per l'utente `studente2`.
+        - Gruppo primario: `root`.
+        - Gruppi secondari: `disk cdrom floppy audio dip video plugdev games netdev scanner bluetooth`.
+
+        Verificate la corretta applicazione dei nuovi gruppi.
+      soluzione: |
+        Come `root`:
+        ``` bash
+        ! grep -q studente2 /etc/passwd || useradd -m studente2
+        usermod -g root -G disk,cdrom,floppy,audio,dip,video,plugdev,games,netdev,scanner,bluetooth studente2
+        ```
+        Per verificare che i gruppi siano stati effettivamente assegnati:
+        ```
+        $ cat /etc/group | grep studente2
+
+        disk:x:6:studente2
+        cdrom:x:24:studente,studente2
+        floppy:x:25:studente,studente2
+        audio:x:29:pulse,studente,studente2
+        dip:x:30:studente,studente2
+        video:x:44:studente,studente2
+        plugdev:x:46:studente,studente2
+        games:x:60:studente2
+        netdev:x:109:studente,studente2
+        bluetooth:x:113:studente,studente2
+        scanner:x:119:saned,studente,studente2
+        studente2:x:1002:
+        ```
+    - numero: 8
+      slide: 83
+      traccia: |
+        Provate ad aggiungere un gruppo secondario `root` all'utente `studente2` usando il seguente comando sbagliato: \
+        ```
+        usermod -G root studente2   
+        ```
+        Notate qualcosa di strano?
+      soluzione: |
+        Sì, l'utente `studente2` è stato rimosso da tutti gli altri gruppi ed ora appartiene solo al gruppo `root`. \
+        Non è nulla di strano, in realtà: è il comportamento dell'opzione `-G` di `usermod`. \
+        Per aggiungere un utente ad un gruppo senza dover ogni volta specificare anche tutti gli altri, bisogna usare l'opzione `-a`.
+    - numero: 9
+      slide: 85
+      traccia: |
+        Aggiungete i seguenti gruppi secondari all'utente `studente2`: \
+        `disk cdrom floppy audio dip video plugdev games netdev scanner bluetooth`
+      soluzione: |
+        *TODO*
+    - numero: 10
+      slide: 101
+      traccia: |
+        Create un file vuoto dal nome `lista.txt` nella vostra home directory. Cambiate utente creatore e gruppo di `lista.txt` nel modo seguente:
+        - utente creatore → `root`
+        - gruppo del file → `root`
+        Verificate la corretta applicazione degli attributi utente creatore e gruppo del file.
+      soluzione: |
+        ``` bash
+        touch ~/lista.txt
+        chown root:root ~/lista.txt
+        ```
+        Per verificare l'avvenuto cambio di attributi si può usare il comando `ls -l ~/lista.txt`.
+    - numero: 11
+      slide: 110
+      traccia: |
+        Create un file vuoto dal nome `lista2.txt` nella vostra home directory. Usando `chmod` con rappresentazione testuale dei permessi, impostate i permessi seguenti sul file:
+        ```
+        rwxr-xr-x
+        ```
+        Verificate la corretta applicazione dei permessi.
+      soluzione: |
+        ``` bash
+        touch ~/lista2.txt
+        chmod u=rwx,go=rx
+        ls -l ~/lista2.txt # verifico i permessi
+        ```
+    - numero: 12
+      slide: 118
+      traccia: |
+        Copiate il file `/usr/bin/passwd` nella vostra home directory. Usando `chmod` con rappresentazione ottale dei permessi, impostate i permessi seguenti sul file:
+        ```
+        rwsr-xr-x
+        ```
+        Verificate la corretta applicazione dei permessi.
+      soluzione: |
+        ``` bash
+        cp /usr/bin/passwd ~/passwd
+        chmod 4655 ~/passwd
+        ls -l ~/passwd # verifico i permessi
+        ```
+        Spiegazione del valore `4655`:
+        - `4`: imposta il bit SETUID;
+        - `6`: imposta i permessi read+write (4 + 2) per l'owner;
+        - `55`: imposta i permessi read+execute (4 + 1) per il gruppo e per tutti gli altri
+- numero: 10
+  titolo: File system
+  esercizi:
+    - numero: 1
+      slide: 26
+      traccia: |
+        Create un nuovo disco fisso virtuale con le seguenti caratteristiche:
+        - dimensione pari ad 1 GB;
+        - allocazione dinamica;
+        - più file da 2 GB l'uno.
+        Agganciate il disco fisso al controller SCSI del sistema guest in uso.
+      soluzione: |
+        *TODO*
+    - numero: 2
+      slide: 54
+      traccia: |
+        Partizionate nel modo seguente il disco fisso creato nell'Esercizio 1:
+        - una sola partizione primaria;
+        - dimensione della partizione pari all'intero disco;
+        - tipologia di partizione “Linux”.
+      soluzione: |
+        **NOTA**: si suppone che il disco creato nell'esercizio 1 sia rappresentato dal file `/dev/sdb` e che sia grande 1 GB. \
+        Come utente `root`:
+        ``` bash
+        fdisk /dev/sdb
+        ```
+        Per creare la partizione:
+        - comando: `n` (crea una nuova partizione)
+        - tipo partizione: `p`;
+        - partition number: `1`;
+        - first sector: `2048` (il default);
+        - last sector: `2097151` (il default);
+        Per cambiare il tipo di partizione:
+        - comando: `t`;
+        - hex code: premere `L` per vedere tutte le tipologie di partizione supportate da `fdisk` e poi inserire l'esadecimale del tipo `Linux` (dovrebbe essere `83`);
+        Inviare il comando `wq` per salvare le modifiche e uscire da `fdisk`.
+    - numero: 3
+      slide: 61
+      traccia: |
+        Create un file system di tipo EXT3 nella partizione primaria del nuovo disco rigido.
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        mkfs -t ext3 /dev/sdb1
+        ```
+    - numero: 4
+      slide: 72
+      traccia: |
+        Leggete la documentazione del comando `mount` e trovate un modo per visualizzare tutti i file system agganciati.
+      soluzione: |
+        Si usa il comando `mount` senza argomenti e senza opzioni, oppure `mount -l -t [tipo]` per elencare soltanto i file system di un certo tipo (`ext3`, `ext4`, ecc.). \
+        Si può ottenere un output più chiaro usando il comando `findmnt -A` (lo si scopre leggendo il manuale di `mount`).
+    - numero: 5
+      slide: 74
+      traccia: |
+        Leggete la documentazione del comando `lsblk` e individuate una modalità di visualizzazione contenente il tipo di file system. \
+        Mostrate tutti i file system associati ed i relativi tipi.
+      soluzione: |
+        ``` bash
+        lsblk -al
+        ```
+    - numero: 6
+      slide: 79
+      traccia: |
+        Sganciate il file system ospitato sul disco esterno.
+      soluzione: |
+        ``` bash
+        umount /mnt
+        ```
+    - numero: 7
+      slide: 85
+      traccia: |
+        Effettuate un controllo di consistenza del file system creato nell'Esercizio 4. \
+        Leggendo le opportune pagine di manuale, individuate un modo per forzare il controllo di esistenza di blocchi cattivi (bad block).
+      soluzione: |
+        Come utente `root`:
+        ``` bash
+        fsck.ext3 -c /dev/sdb1
+        ```
+        Il comando `fsck.ext3` lo si trova in fondo al manuale di `fsck`, nella sezione **SEE ALSO**.
+- numero: 11
+  titolo: Processi
+  esercizi:
+    - numero: 1
+      slide: 25
+      traccia: |
+        Qual è il PID del processo `init` (il gestore dei servizi UNIX)?
+      soluzione: |
+        ``` bash
+        pidof init
+        ```
+    - numero: 2
+      slide: 29
+      traccia: |
+        I processi del desktop “GNOME” iniziano con la stringa “gnome”. Come si possono individuare i processi del desktop in esecuzione?
+      soluzione: |
+        ``` bash
+        pgrep -l '^gnome.*$'
+        ```
+    - numero: 3
+      slide: 30
+      traccia: |
+        Elencate tutti i processi (e relativi PID) eseguiti per conto del vostro username. \
+        Leggete la pagina di manuale del comando opportuno per capire come fare.
+      soluzione: |
+        ``` bash
+        pgrep -l -U $(id -u $(whoami))
+        ```
+    - numero: 4
+      slide: 35
+      traccia: |
+        Aprite un terminale. Con gli strumenti a vostra disposizione, individuate un modo per creare una gerarchia di processi come quella mostrata in figura (processo padre, figlio e nipote).
+      soluzione: |
+        Si apre un terminale e si lancia `bash` 2 volte.
+        - all'avvio del terminale viene automaticamente lanciata la 1° istanza di `bash` (processo padre);
+        - il 1° comando `bash` dato manualmente va a creare una nuova istanza di `bash`, figlia della precedente;
+        - eseguendo di nuovo `bash` si crea un'altra istanza ancora, figlia della precedente
+    - numero: 5
+      slide: 55
+      traccia: |
+        Mostrate la catena di processi da `init` ad uno qualunque dei processi `bash`.
+      soluzione: |
+        ``` bash
+        pstree -ac -s $(pidof bash)
+        ```
+        L'opzione `-s` mostra solo la porzione di albero che parte da `init` e termina al processo con PID indicato. \
+        Quest'opzione è diversa da `-H`, che mostra sempre l'intero albero.
+    - numero: 6
+      slide: 79
+      traccia: |
+        Avviate il comando `top`. \
+        Terminate il processo appena creato, inviandogli un segnale opportuno.
+      soluzione: |
+        ``` bash
+        top
+        /bin/kill $(pgrep top) # in un'altro terminale
+        ```
+    - numero: 7
+      slide: 83
+      traccia: |
+        Eseguite un emulatore di terminale. \
+        Leggete la pagina di manuale di `pkill` e individuate un modo per terminare l'istanza più recente del processo `bash`.
+      soluzione: |
+        ``` bash
+        pkill -n bash
+        ```
+        Il comando non esegue nulla: questo perché Bash ignora il segnale `TERM` lanciato dai suoi figli. \
+        Per forzare la terminazione di `bash` bisogna usare il segnale `KILL`:
+        ``` bash
+        pkill -n --signal=KILL bash
+        ```
+    - numero: 8
+      slide: 95
+      traccia: |
+        Visualizzate i trenta file più grandi nell'intero file system.
+      soluzione: |
+        *TODO*
+    - numero: 10
+      slide: 101
+      traccia: |
+        Il comando seguente estrae le colonne “username” e “user ID” di /etc/passwd e stampa il valore delle ultime dieci righe:
+        ``` bash
+        cut -f1,4 /etc/passwd | head -10
+        ```
+        Verificate la correttezza del comando.
+      soluzione: |
+        *TODO*
+    - numero: 11
+      slide: 109
+      traccia: |
+        Visualizzate i trenta file più grandi nell'intero file system. \
+        Usate le named pipe per la comunicazione tra processi. \
+        Spiegate il blocco dei vari processi coinvolti.
+      soluzione: |
+        ``` bash
+        mkfifo fifo1 fifo2
+        find / -printf "%p %s\n" > fifo1
+        sort -rn -t ' ' -k 2 < fifo1 > fifo2
+        head -n 30 < fifo2
+        rm fifo1 fifo2
+        ```
+        Fare attenzione al fatto che le named pipe vanno utilizzate al posto di stdin/stdout/stderr nei vari comandi. Non vanno passate come argomenti!
+    - numero: 11
+      slide: 142
+      traccia: |
+        Lanciate sullo sfondo un comando che legge un valore da terminale e lo memorizza nella variabile `a`. \
+        Visualizzate l'elenco dei job. \
+        Notate qualcosa di strano? \
+        Come è possibile portare a termine l'operazione?
+      soluzione: |
+        ``` bash
+        read a &
+        ```
+        Si ripristina poi il job usando il comando `fg`. \
+        Una volta ripristinato il comando, esso bloccherà il terminale per leggere il valore di `a`. Se però si prova a stampare `$a`, si nota che ha un valore vuoto.
+        L'esecuzione del comando `read a` in background ha portato alla creazione di un nuovo sotto-processo per eseguire tale comando.
+        Le modifiche al valore di `a` quindi sono visibile solo in quel sotto-processo e non vengono propagate al processo padre (il Bash che stampa il valore di `a`).
+        Per questo il valore di `a` è vuoto.
+    - numero: 12
+      slide: 146
+      traccia: |
+        Cercate un comando che stampa una sequenza di numeri. \
+        Usate tale comando per implementare un ciclo for che stampa i numeri da 1 a 100.
+      soluzione: |
+        Il comando richiesto è `seq`.
+    - numero: 13
+      slide: 152
+      traccia: |
+        Il comando `diff` confronta due file e stampa una rappresentazione efficiente delle loro differenze. \
+        A partire da questa informazione, individuate un metodo per trovare le differenze nei contenuti di due pagine Web distinte.
+      soluzione: |
+        ``` bash
+        diff <(wget -q -O - https://www.google.com) <(wget -q -O - https://www.google.it)
+        ```
+        L'opzione `-O -` di `wget` fa scrivere a `wget` l'output su standard output, anziché su un file.
+- numero: 12
+  titolo: Elevazione dei privilegi
+  esercizi:
+    - numero: 1
+      slide: 55
+      traccia: |
+        Stampate tutti gli identificatori:
+        - dell'utente attivo sul vostro terminale;
+        - dell'utente `root`.
+      soluzione: |
+        ``` bash
+        id $(whoami) root
+        ```
+    - numero: 2
+      slide: 58
+      traccia: |
+        Diventate l'utente `root`. Stampate le variabili di ambiente con il comando interno `export`.
+
+        Notate qualcosa di strano?
+      soluzione:
+        Come spiegato a lezione, avendo eseguito `su` senza opzioni le variabili d'ambiente sono rimaste quelle dell'utente che si aveva prima di lanciare `su`.
+    - numero: 3
+      slide: 60
+      traccia: |
+        Diventate `root`, caricando in memoria il suo ambiente. \
+        Stampate le variabili di ambiente con il comando `export`. \
+        Confrontate l'output attuale con quello dell'esercizio precedente.
+
+        Notate qualcosa di strano?
+      soluzione: |
+        Le variabili d'ambiente di `root` sono molte meno rispetto a quelle di un utente non amminstratore.
+    - numero: 4
+      slide: 62
+      traccia: |
+        Create un utente `docente`, se già non esiste. \
+        Lanciate una shell da utente `docente`.
+      soluzione: |
+        *TODO*
+    - numero: 5
+      slide: 65
+      traccia: |
+        Lanciate da utente `prova` un comando che mostri solo file e directory nascosti nella sua home directory.
+      soluzione: |
+        *TODO*
+    - numero: 6
+      slide: 101
+      traccia: |
+        Aprite un terminale e lanciate il comando `env`. \
+        Aprite un altro terminale e lanciate il comando `env` come il vostro utente.
+
+        Notate delle differenze nell'output dei due comandi?
+      soluzione: |
+        ``` bash
+        env # da lanciare nel 1° terminale
+        sudo -u $(whoami) env # da lanciare nel 2° terminale
+        ```
+        L'output del 2° comando è molto più piccolo.
+    - numero: 7
+      slide: 103
+      traccia: |
+        Eseguite come utente `prova` e gruppo primario `disk` il comando che legge il primo disco rigido SATA.
+      soluzione: |
+        *TODO*
+    - numero: 8
+      slide: 113
+      traccia: |
+        Modificate il file `/etc/sudoers` in modo tale da permettere al vostro utente l'esecuzione come `root` e senza password dei seguenti comandi:
+        - `slabtop`
+        - `cat /dev/mem`
+      soluzione: |
+        *TODO*
+    - numero: 9
+      slide: 119
+      traccia: |
+        Il binario eseguibile `top` permette di monitorare i processi in maniera interattiva. \
+        Copiate il file dell'eseguibile `top` nella vostra home directory, dandogli il nome `newtop`. \
+        Cambiate utente creatore del file nel modo seguente:
+        - utente creatore → `root`.
+        Impostate il bit SETUID e eseguite `newtop`.
+
+        Con quali diritti esegue `newtop`?
+      soluzione: |
+        *TODO*
+    - numero: 10
+      slide: 124
+      traccia: |
+        Eseguire `getcap /bin/ls`. \
+        Per quale motivo non siete riusciti ad eseguire il comando `getcap`? \
+        Che cosa dovete fare per eseguire il comando `getcap`?
+      soluzione: |
+        Come utente normale, il comando fallisce perché `getcap` è un `/usr/sbin`, che non è nel `PATH` di un utente non-amministratore. \
+        Per invocare correttamente `getcap` come utente non amministratore bisogna usare il suo percorso assoluto:
+        ``` bash
+        /usr/sbin/getcap /bin/ls
+        ```
+    - numero: 11
+      slide: 134
+      traccia: |
+        Usando il comando `cp`, copiate il comando `ping` nella vostra home directory, dandogli il nome `newping`. \
+        Annullate le capability del file `newping`. \
+        Eseguite `newping 8.8.8.8`. Funziona?
+
+        Assegnate le capability `cap_net_raw` agli insiemi permitted ed effective sul file `newping`. \
+        Eseguite `newping 8.8.8.8`. Funziona?
+      soluzione: |
+        *TODO*
+- numero: 13
+  titolo: Gestione software Debian
+  esercizi:
+    - numero: 1
+      slide: 47
+      traccia: |
+        Aprite il file `/etc/apt/sources.list` della vostro SO Debian. Configurate il file in modo tale da recuperare i repository seguenti da rete:
+        - repository ufficiale;
+        - repository degli aggiornamenti di sicurezza;
+        - repository degli aggiornamenti non di sicurezza.
+        Inoltre, abilitate le seguenti componenti:
+        - software libero;
+        - software non libero;
+        - software libero che dipende da software non libero.
+      soluzione: |
+        Modificare il file `/etc/apt/sources.list` come `root` ed aggiungere/scommentare le seguenti righe:
+        ```
+        # repository ufficiale
+        deb https://deb.debian.org/debian/ bullseye main non-free contrib
+
+        # repository con gli aggiornamenti di sicurezza
+        deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+
+        # repository con gli aggiornamenti non di sicurezza
+        deb https://deb.debian.org/debian/ bullseye-updates main contrib non-free
+        ```
+    - numero: 2
+      slide: 59
+      traccia: |
+        Installate il pacchetto software `hello`.
+      soluzione: |
+        ``` bash
+        sudo apt install hello
+        ```
+    - numero: 3
+      slide: 61
+      traccia: |
+        Cancellate il pacchetto binario `hello` appena installato.
+      soluzione: |
+        ``` bash
+        sudo apt remove --purge hello
+        ```
+        `--purge` elimina anche eventuali file di configurazione creati con l'installazione del pacchetto.
+    - numero: 4
+      slide: 67
+      traccia: |
+        Installate il pacchetto binario `apache2` (Web server Apache, v2.4). \
+        Verificate la presenza della directory seguente:
+        - `/etc/apache2`
+        Rimuovete il pacchetto con il comando:
+        - `apt remove apache2`
+        La directory è ancora presente? \
+        Se è ancora presente, cosa dovete fare per rimuoverla?
+      soluzione: |
+        ``` bash
+        sudo apt install apache2
+        ls -l /etc/apache2 # verifica la presenza della directory
+        sudo apt remove apache2
+        ls -l /etc/apache2
+        ```
+        La directory `/etc/apache2` è ancora presente dopo la rimozione del pacchetto. Per rimuoverla bisogna usare `sudo apt purge apache2` 
+        (ed eventualmente `sudo apt autoremove --purge apache2` per eliminare dipendenze non più usate).
+    - numero: 5
+      slide: 74
+      traccia: |
+        Pulite la cache dei pacchetti. \
+        Quanto spazio su disco è stato recuperato dopo la pulizia?
+      soluzione: |
+        ``` bash
+        sudo du -hs /var/cache/apt/archives # verifico quanto spazio occupa la cache prima di eliminarla
+        sudo apt clean
+        sudo du -hs /var/cache/apt/archives
+        ```
+    - numero: 6
+      slide: 78
+      traccia: |
+        Sincronizzate il repository locale della vostra distribuzione con quello remoto. \
+        Aprite la pagina di manuale di `apt` ed individuate una opzione per simulare l'aggiornamento della distribuzione. \
+        Eseguite una simulazione di aggiornamento della distribuzione e valutate quanti pacchetti binari dovrebbero essere aggiornati.
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~$ sudo apt update
+        Hit:1 http://security.debian.org/debian-security bullseye-security InRelease
+        Hit:2 https://deb.debian.org/debian bullseye InRelease   
+        Hit:3 https://deb.debian.org/debian bullseye-updates InRelease
+        Reading package lists... Done
+        Building dependency tree... Done
+        Reading state information... Done
+        All packages are up to date.
+        studente@riccardo-vm-debian:~$ sudo apt-get -s dist-upgrade
+        Reading package lists... Done
+        Building dependency tree... Done
+        Reading state information... Done
+        Calculating upgrade... Done
+        0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+        ```
+    - numero: 7
+      slide: 86
+      traccia: |
+        Cercate tutti i videogiochi disponibili nei repository configurati. \
+        Raffinate la ricerca e cercate un gioco di biliardo. \
+        Installate i pacchetti software corrispettivi ed eseguite i giochi. \
+
+        Avete incontrato particolari difficoltà?
+      soluzione: |
+        ``` bash
+        apt search 'game' # cerca i videogiochi
+        apt search 'billiard' # cerca i videogiochi di biliardo
+        ```
+        Tra i pacchetti che vengono trovati, quelli di biliardo sono `billard-gl`, `foobillardplus` e `gtkpool`. Si possono installare con `apt install`. \
+        Una volta installati, per trovare il file eseguibile si può usare `apt-file list`.
+    - numero: 8
+      slide: 91
+      traccia: |
+        Installate la documentazione relativa alla Java Virtual Machine OpenJDK.
+      soluzione: |
+        ```
+        studente@riccardo-vm-debian:~$ apt search '^.*openjdk.*doc$'
+        Sorting... Done
+        Full Text Search... Done
+        openjdk-11-doc/stable-security 11.0.14+9-1~deb11u1 all
+
+          OpenJDK Development Kit (JDK) documentation
+
+        openjdk-17-doc/stable-security,now 17.0.2+8-1~deb11u1 all [installed]
+          OpenJDK Development Kit (JDK) documentation
+
+        ```
+        Usare poi `apt install` per installare uno dei due pacchetti.
+    - numero: 9
+      slide: 101
+      traccia: |
+        Individuate le dipendenze dirette del pacchetto software `libreoffice`.
+      soluzione: |
+        ``` bash
+        apt depends libreoffice
+        ```
+    - numero: 10
+      slide: 108
+      traccia: |
+        Individuate le dipendenze inverse del pacchetto software libreoffice.
+      soluzione: |
+        ``` bash
+        apt rdepends libreoffice
+        ```
+    - numero: 11
+      slide: 113
+      traccia: |
+        Calcolate, disegnate e visualizzate il grafo delle dipendenze dirette del pacchetto binario `coreutils`. \
+        Leggete la pagina di manuale del comando opportuno e trovate un modo per calcolare il grafo contenente anche le dipendenze inverse.
+      soluzione: |
+        ``` bash
+        dot -Tsvg <(debtree -R coreutils) > coreutils.svg
+        inkscape coreutils.svg
+        ```
+    - numero: 12
+      slide: 118
+      traccia: |
+        In quale pacchetto binario si trova l'eseguibile `dd`?
+      soluzione: |
+        ``` bash
+        sudo apt-file update
+        apt-file search -x '^/bin/dd$'
+        ```
+        Il pacchetto in cui è contenuto `dd` è `coreutils`. \
+    - numero: 13
+      slide: 125
+      traccia: |
+        Analizzate il pacchetto binario `kde-full`. \
+        Quali file fornisce? \
+        Da quali pacchetti binari dipende? \
+        Secondo voi, è un metapacchetto?
+      soluzione: |
+        ``` bash
+        apt show kde-full # mostra i metadati del pacchetto e le sue dipendenze
+        apt-file list kde-full # mostra i file forniti dal pacchetto
+        ```
+        Si tratta di un metapacchetto (cosa tra l'altro indicata anche nella descrizione visibile con `apt show`): i file forniti sono soltanto 2 e presenta molte dipendenze.
+    - numero: 14
+      slide: 137
+      traccia: |
+        Individuate il pacchetto virtuale del browser Web grafico. \
+        Individuate le possibili alternative e l'alternativa di default. \
+        Cambiare l'alternativa con un browser a scelta. \
+        Eseguite il comando virtuale. \
+        Verificare l'esecuzione del browser scelto.
+      soluzione: |
+        ``` bash
+        update-alternatives --get-selections | grep 'browser' # vengono mostrati i pacchetti gnome-www-browser e x-www-browser
+        update-alternatives --list gnome-www-browser # mostra le alternative
+        sudo update-alternatives --config gnome-www-browser # configura l'alternativa
+        ```
+        Nota: se `update-alternatives --list` mostra soltanto 1 alternativa, il comando `update-alternatives --config` fallirà (essendoci una sola alternativa non c'è niente
+        da configurare). \
+        Per vedere quali altre alternative sono installabili, eseguire `sudo apt install gnome-www-browser`:
+        ```
+        studente@riccardo-vm-debian:~$ sudo apt install gnome-www-browser
+        Reading package lists... Done
+        Building dependency tree... Done
+        Reading state information... Done
+        Package gnome-www-browser is a virtual package provided by:
+          firefox-esr 91.6.0esr-1~deb11u1
+          epiphany-browser 3.38.2-1+deb11u1
+          chromium 98.0.4758.102-1~deb11u1
+        You should explicitly select one to install.
+
+        E: Package 'gnome-www-browser' has no installation candidate
+        ```
